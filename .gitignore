@@ -52,3 +52,9 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# macos
+.DS_Store
+
+# ncrunch
+TestApi.v3.ncrunchsolution.user
