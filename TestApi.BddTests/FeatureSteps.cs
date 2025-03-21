@@ -92,6 +92,12 @@ public class AddNumbersStepDefinitions(WebApplicationFactory<SelfHosting> factor
 
         var actualBody = lastBody;
 
+        if (actualBody == null)
+        {
+            var message = $"The body cannot be null";
+            throw new NullReferenceException(message);
+        }
+
         var captured = actualBody.AsJsonString().Should().ContainSubset(expectedResponse.Body);
 
         // Update variables with any newly captured variables (overwriting old vars with new ones if duplicated)
@@ -162,6 +168,12 @@ public class AddNumbersStepDefinitions(WebApplicationFactory<SelfHosting> factor
     [Then(@"the response headers are")]
     public void ThenTheResponseHeadersAre(Table table)
     {
+        if (lastResponse == null)
+        {
+            var message = $"The last response was null (has a request been made first?)";
+            throw new NullReferenceException(message);
+        }
+
         foreach (var row in table.Rows)
         {
             var headerName = row["Header"];
@@ -183,8 +195,8 @@ public class AddNumbersStepDefinitions(WebApplicationFactory<SelfHosting> factor
             }
             else
             {
-                var message = $"The '{headerName}' header is missing.";
-                lastResponse.Headers.TryGetValues(headerName, out IEnumerable<string>? values).Should().BeTrue(message);
+                var missingMessage = $"The '{headerName}' header is missing.";
+                lastResponse.Headers.TryGetValues(headerName, out _).Should().BeTrue(missingMessage);
             }
         }
     }
