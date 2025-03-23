@@ -22,7 +22,7 @@ public class JobController : ControllerBase
             return Problem(
                 statusCode: StatusCodes.Status400BadRequest,
                 title: "Job Type Invalid",
-                detail: $"The Job Type '{request.JobType}' is invalid."
+                detail: $"The Job Type '{request?.JobType}' is invalid."
             );
         }
 
@@ -72,6 +72,8 @@ public class JobStore : IJobStore
 
     public bool TryGetJobStatus(string jobId, out string status)
     {
+#pragma warning disable CS8601 // Possible null reference assignment.
         return jobs.TryGetValue(jobId, out status);
+#pragma warning restore CS8601 // Possible null reference assignment.
     }
 }

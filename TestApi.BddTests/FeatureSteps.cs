@@ -145,6 +145,7 @@ public class AddNumbersStepDefinitions(WebApplicationFactory<SelfHosting> factor
                 variables[variableName].ValueKind.Should().Be(JsonValueKind.String);
                 DateTime.TryParse(variables[variableName].GetString(), out _).Should().BeTrue();
                 break;
+
             default:
                 throw new InvalidOperationException($"Unknown variable type '{variableType}'");
         }
