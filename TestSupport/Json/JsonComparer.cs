@@ -117,7 +117,7 @@ public static partial class JsonComparer
         if (expected.ValueKind != actual.ValueKind)
         {
             if ((expected.ValueKind == JsonValueKind.True && actual.ValueKind == JsonValueKind.False) ||
-                (expected.ValueKind == JsonValueKind.True && actual.ValueKind == JsonValueKind.False))
+                (expected.ValueKind == JsonValueKind.False && actual.ValueKind == JsonValueKind.True))
             {
                 mismatches.Add($"{jsonPath}: Boolean mismatch. Expected {expected.GetBoolean()}, got {actual.GetBoolean()}.");
             }

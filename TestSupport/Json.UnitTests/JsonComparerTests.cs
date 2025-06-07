@@ -206,13 +206,13 @@ public class JsonComparerTests
         Assert.Contains(mismatches, m => m.Contains("$.greeting") && m.Contains("String mismatch"));
     }
 
-    [Fact]
-    public void ExactMatch_BooleanMismatch_ShouldReportMismatch()
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void ExactMatch_BooleanMismatch_ShouldReportBooleanMismatch(bool expectedValue, bool actualValue)
     {
-        // Expected JSON with a boolean value of true.
-        string expected = """{ "active": true }""";
-        // Actual JSON with a boolean value of false.
-        string actual = """{ "active": false }""";
+        string expected = $$"""{ "active": {{expectedValue.ToString().ToLower()}} }""";
+        string actual = $$"""{ "active": {{actualValue.ToString().ToLower()}} }""";
 
         bool result = JsonComparer.ExactMatch(expected, actual,
             out Dictionary<string, JsonElement> extractedValues,
@@ -220,8 +220,14 @@ public class JsonComparerTests
 
         // The match should fail because of the boolean mismatch.
         Assert.False(result);
-        // Check that the mismatch message indicates a boolean mismatch at the expected JSONPath.
-        Assert.Contains(mismatches, m => m.Contains("$.active") && m.Contains("Boolean mismatch"));
+        
+        // Check that the mismatch message indicates a boolean mismatch (not type mismatch).
+        var booleanMismatchFound = mismatches.Any(m => m.Contains("$.active") && m.Contains("Boolean mismatch"));
+        var actualMismatchMessage = mismatches.FirstOrDefault(m => m.Contains("$.active"));
+        
+        Assert.True(booleanMismatchFound, 
+            $"Expected 'Boolean mismatch' message but got: '{actualMismatchMessage}'. " +
+            $"Testing {expectedValue} -> {actualValue}");
     }
 
     [Fact]
