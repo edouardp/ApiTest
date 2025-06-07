@@ -283,4 +283,28 @@ public class JsonComparerTests
         Assert.Empty(extractedValues);
         Assert.Empty(mismatches);
     }
+
+    [Fact]
+    public void ExactMatch_EmptyStrings_ShouldThrowJsonException()
+    {
+        // Empty JSON strings should throw JsonException during parsing.
+        Assert.ThrowsAny<JsonException>(() =>
+        {
+            JsonComparer.ExactMatch("", "",
+                out Dictionary<string, JsonElement> extractedValues,
+                out List<string> mismatches);
+        });
+    }
+
+    [Fact]
+    public void ExactMatch_NullStrings_ShouldThrowArgumentNullException()
+    {
+        // Null JSON strings should throw ArgumentNullException during parsing.
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            JsonComparer.ExactMatch(null, null,
+                out Dictionary<string, JsonElement> extractedValues,
+                out List<string> mismatches);
+        });
+    }
 }
