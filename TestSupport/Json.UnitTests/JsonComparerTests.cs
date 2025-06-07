@@ -259,4 +259,22 @@ public class JsonComparerTests
         Assert.Empty(extractedValues);  
         Assert.Empty(mismatches);
     }
+
+    [Fact]
+    public void ExactMatch_EmptyArrays_ShouldMatch()
+    {
+        // Both expected and actual JSON contain empty arrays.
+        string expected = """{ "items": [] }""";
+        string actual = """{ "items": [] }""";
+
+        bool result = JsonComparer.ExactMatch(expected, actual,
+            out Dictionary<string, JsonElement> extractedValues,
+            out List<string> mismatches);
+
+        // The match should succeed because both arrays are empty.
+        Assert.True(result);
+        // Ensure no extracted values or mismatches.
+        Assert.Empty(extractedValues);
+        Assert.Empty(mismatches);
+    }
 }
