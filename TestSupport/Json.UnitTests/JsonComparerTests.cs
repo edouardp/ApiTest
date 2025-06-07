@@ -302,7 +302,7 @@ public class JsonComparerTests
         // Null JSON strings should throw ArgumentNullException during parsing.
         Assert.Throws<ArgumentNullException>(() =>
         {
-            JsonComparer.ExactMatch(null, null,
+            JsonComparer.ExactMatch(null!, null!,
                 out Dictionary<string, JsonElement> extractedValues,
                 out List<string> mismatches);
         });
