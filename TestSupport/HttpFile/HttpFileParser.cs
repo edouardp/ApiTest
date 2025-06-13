@@ -62,10 +62,57 @@ public class HttpFileParser
         // Initialize an empty list to store parsed headers
         var headers = new List<ParsedHeader>();
         string? line;
-        while (!string.IsNullOrWhiteSpace(line = await reader.ReadLineAsync()))
+        string? currentHeaderLine = null;
+        
+        while ((line = await reader.ReadLineAsync()) != null)
         {
-            // Parse each header using the HttpHeadersParser (assumed to be implemented elsewhere)
-            var parsedHeader = HttpHeadersParser.ParseHeader(line);
+            // Check if this is an empty line (end of headers)
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                // Process any pending header before breaking
+                if (!string.IsNullOrWhiteSpace(currentHeaderLine))
+                {
+                    var parsedHeader = HttpHeadersParser.ParseHeader(currentHeaderLine);
+                    headers.Add(parsedHeader);
+                    currentHeaderLine = null; // Clear to avoid double processing
+                }
+                break;
+            }
+            
+            // Check if this is a continuation line (starts with whitespace)
+            if (line.StartsWith(' ') || line.StartsWith('\t'))
+            {
+                // This is a multiline header continuation
+                if (currentHeaderLine != null)
+                {
+                    // Append to the current header, replacing the line break with a space
+                    currentHeaderLine += " " + line.Trim();
+                }
+                else
+                {
+                    // Invalid format: continuation line without a header
+                    throw new InvalidDataException("Invalid HTTP header format: continuation line without header.");
+                }
+            }
+            else
+            {
+                // This is a new header line
+                // First, process any pending header
+                if (!string.IsNullOrWhiteSpace(currentHeaderLine))
+                {
+                    var parsedHeader = HttpHeadersParser.ParseHeader(currentHeaderLine);
+                    headers.Add(parsedHeader);
+                }
+                
+                // Start a new header
+                currentHeaderLine = line;
+            }
+        }
+
+        // Process any remaining header after the loop ends (when stream ends without empty line)
+        if (!string.IsNullOrWhiteSpace(currentHeaderLine))
+        {
+            var parsedHeader = HttpHeadersParser.ParseHeader(currentHeaderLine);
             headers.Add(parsedHeader);
         }
 

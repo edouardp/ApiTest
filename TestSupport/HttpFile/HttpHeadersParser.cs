@@ -3,7 +3,7 @@
     /// <summary>
     /// Provides functionality to parse HTTP headers into structured components.
     /// </summary>
-    public class HttpHeadersParser
+    public static class HttpHeadersParser
     {
         /// <summary>
         /// Parses an HTTP header string into its name, value, and optional parameters.
@@ -44,7 +44,7 @@
 
             // Dictionary to store parameter key-value pairs, ignoring case.
             var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 1; i < parts.Length; i++)
+            for (var i = 1; i < parts.Length; i++)
             {
                 // Split each parameter by '=', limiting to 2 parts in case of multiple '=' signs.
                 var parameterParts = parts[i].Split('=', 2);

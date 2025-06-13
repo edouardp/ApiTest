@@ -9,19 +9,18 @@ public class HttpFileParserTests
     public async Task ParseAsync_Should_Parse_POST_Request_With_Headers_And_Body()
     {
         // Arrange
-        string rawRequest = """
+        const string rawRequest = """
             POST /submit HTTP/1.1
             Content-Type: application/json; charset=utf-8
             Authorization: Bearer your_token_here
 
             {
-              "name": "John Doe",
-              "age": 30
+            "name": "John Doe",
+            "age": 30
             }
             """;
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
 
         // Act
         var result = await HttpFileParser.ParseAsync(stream);
@@ -37,8 +36,8 @@ public class HttpFileParserTests
             .Which.Parameters.Should().ContainKey("charset").And.ContainValue("utf-8");
         result.Body.Should().Be("""
             {
-              "name": "John Doe",
-              "age": 30
+            "name": "John Doe",
+            "age": 30
             }
             """);
     }
@@ -47,14 +46,13 @@ public class HttpFileParserTests
     public async Task ParseAsync_Should_Parse_GET_Request_Without_Body()
     {
         // Arrange
-        string rawRequest = """
+        const string rawRequest = """
             GET /api/v1/users HTTP/1.1
             Host: example.com
             Accept: application/json
             """;
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
 
         // Act
         var result = await HttpFileParser.ParseAsync(stream);
@@ -79,7 +77,6 @@ public class HttpFileParserTests
             """;
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
 
         // Act
         var result = await HttpFileParser.ParseAsync(stream);
@@ -104,7 +101,6 @@ public class HttpFileParserTests
             """;
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
 
         // Act
         var result = await HttpFileParser.ParseAsync(stream);
@@ -130,7 +126,6 @@ public class HttpFileParserTests
             """;
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
 
         // Act
         var result = await HttpFileParser.ParseAsync(stream);
@@ -146,16 +141,17 @@ public class HttpFileParserTests
     public async Task ParseAsync_Should_ThrowException_When_RequestLine_Is_Missing()
     {
         // Arrange: Missing request line (empty input)
-        string rawRequest = """
-            
-            """;
+        const string rawRequest = """
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
+                                  """;
 
         // Act
-        Func<Task> act = async () => await HttpFileParser.ParseAsync(stream);
-
+        Func<Task> act = async () =>
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+            await HttpFileParser.ParseAsync(stream);
+        };
+        
         // Assert
         await act.Should().ThrowAsync<InvalidDataException>()
             .WithMessage("Invalid HTTP file format: missing request line.");
@@ -170,11 +166,12 @@ public class HttpFileParserTests
 
             """;
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
-
         // Act
-        Func<Task> act = async () => await HttpFileParser.ParseAsync(stream);
+        Func<Task> act = async () =>
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+            await HttpFileParser.ParseAsync(stream);
+        };
 
         // Assert
         await act.Should().ThrowAsync<InvalidDataException>()
@@ -190,11 +187,12 @@ public class HttpFileParserTests
 
             """;
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
-
         // Act
-        Func<Task> act = async () => await HttpFileParser.ParseAsync(stream);
+        Func<Task> act = async () =>
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+            await HttpFileParser.ParseAsync(stream);
+        };
 
         // Assert
         await act.Should().ThrowAsync<InvalidDataException>()
@@ -216,11 +214,12 @@ public class HttpFileParserTests
             }
             """;
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
-
         // Act
-        Func<Task> act = async () => await HttpFileParser.ParseAsync(stream);
+        Func<Task> act = async () =>
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+            await HttpFileParser.ParseAsync(stream);
+        };
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -241,11 +240,12 @@ public class HttpFileParserTests
             }
             """;
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
-
         // Act
-        Func<Task> act = async () => await HttpFileParser.ParseAsync(stream);
+        Func<Task> act = async () =>
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+            await HttpFileParser.ParseAsync(stream);
+        };
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -266,11 +266,12 @@ public class HttpFileParserTests
             }
             """;
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
-
         // Act
-        Func<Task> act = async () => await HttpFileParser.ParseAsync(stream);
+        Func<Task> act = async () =>
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+            await HttpFileParser.ParseAsync(stream);
+        };
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -291,11 +292,12 @@ public class HttpFileParserTests
             }
             """;
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
-
         // Act
-        Func<Task> act = async () => await HttpFileParser.ParseAsync(stream);
+        Func<Task> act = async () =>
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+            await HttpFileParser.ParseAsync(stream);
+        };
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -313,13 +315,227 @@ public class HttpFileParserTests
             """;
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
-        var parser = new HttpFileParser();
 
         // Act
         var result = await HttpFileParser.ParseAsync(stream);
 
         // Assert: The parser will not throw in this case, but result.Body will be empty
         result.Body.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_Handle_URL_With_Query_Parameters()
+    {
+        // Arrange
+        string rawRequest = """
+            GET /api/users?page=1&limit=10&filter=active HTTP/1.1
+            Host: example.com
+            """;
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+
+        // Act
+        var result = await HttpFileParser.ParseAsync(stream);
+
+        // Assert
+        result.Method.Should().Be(HttpMethod.Get);
+        result.Url.Should().Be("/api/users?page=1&limit=10&filter=active");
+        result.Headers.Should().ContainSingle(header => header.Name == "Host")
+            .Which.Value.Should().Be("example.com");
+        result.Body.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_Handle_URL_With_Special_Characters()
+    {
+        // Arrange
+        string rawRequest = """
+            GET /api/search?query=hello%20world&category=caf%C3%A9 HTTP/1.1
+            Host: example.com
+            """;
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+
+        // Act
+        var result = await HttpFileParser.ParseAsync(stream);
+
+        // Assert
+        result.Method.Should().Be(HttpMethod.Get);
+        result.Url.Should().Be("/api/search?query=hello%20world&category=caf%C3%A9");
+        result.Headers.Should().ContainSingle(header => header.Name == "Host")
+            .Which.Value.Should().Be("example.com");
+        result.Body.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_Handle_URL_With_Fragment()
+    {
+        // Arrange
+        string rawRequest = """
+            GET /page#section1 HTTP/1.1
+            Host: example.com
+            """;
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+
+        // Act
+        var result = await HttpFileParser.ParseAsync(stream);
+
+        // Assert
+        result.Method.Should().Be(HttpMethod.Get);
+        result.Url.Should().Be("/page#section1");
+        result.Headers.Should().ContainSingle(header => header.Name == "Host")
+            .Which.Value.Should().Be("example.com");
+        result.Body.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_Handle_Root_URL()
+    {
+        // Arrange
+        string rawRequest = """
+            GET / HTTP/1.1
+            Host: example.com
+            """;
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+
+        // Act
+        var result = await HttpFileParser.ParseAsync(stream);
+
+        // Assert
+        result.Method.Should().Be(HttpMethod.Get);
+        result.Url.Should().Be("/");
+        result.Headers.Should().ContainSingle(header => header.Name == "Host")
+            .Which.Value.Should().Be("example.com");
+        result.Body.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_Handle_URL_With_Multiple_Slashes()
+    {
+        // Arrange
+        string rawRequest = """
+            GET /api//v1///users HTTP/1.1
+            Host: example.com
+            """;
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+
+        // Act
+        var result = await HttpFileParser.ParseAsync(stream);
+
+        // Assert
+        result.Method.Should().Be(HttpMethod.Get);
+        result.Url.Should().Be("/api//v1///users");
+        result.Headers.Should().ContainSingle(header => header.Name == "Host")
+            .Which.Value.Should().Be("example.com");
+        result.Body.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_Handle_Long_URL()
+    {
+        // Arrange
+        string longPath = string.Join("/", Enumerable.Repeat("segment", 50));
+        string rawRequest = $"""
+            GET /{longPath}?param=value HTTP/1.1
+            Host: example.com
+            """;
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+
+        // Act
+        var result = await HttpFileParser.ParseAsync(stream);
+
+        // Assert
+        result.Method.Should().Be(HttpMethod.Get);
+        result.Url.Should().Be($"/{longPath}?param=value");
+        result.Headers.Should().ContainSingle(header => header.Name == "Host")
+            .Which.Value.Should().Be("example.com");
+        result.Body.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_Handle_Multiline_Header_With_Space_Continuation()
+    {
+        // Arrange
+        string rawRequest = """
+            GET /api/test HTTP/1.1
+            Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+             .eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0
+             .SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+            Host: example.com
+            """;
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+
+        // Act
+        var result = await HttpFileParser.ParseAsync(stream);
+
+        // Assert
+        result.Method.Should().Be(HttpMethod.Get);
+        result.Url.Should().Be("/api/test");
+        result.Headers.Should().ContainSingle(header => header.Name == "Authorization")
+            .Which.Value.Should().Be("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 .eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0 .SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
+        result.Headers.Should().ContainSingle(header => header.Name == "Host")
+            .Which.Value.Should().Be("example.com");
+        result.Body.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_Handle_Multiline_Header_With_Tab_Continuation()
+    {
+        // Arrange
+        string rawRequest = """
+            POST /api/submit HTTP/1.1
+            Content-Type: application/json;
+            	charset=utf-8;
+            	boundary=something
+            Host: example.com
+
+            {"test": "data"}
+            """;
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+
+        // Act
+        var result = await HttpFileParser.ParseAsync(stream);
+
+        // Assert
+        result.Method.Should().Be(HttpMethod.Post);
+        result.Url.Should().Be("/api/submit");
+        result.Headers.Should().ContainSingle(header => header.Name == "Content-Type")
+            .Which.Value.Should().Be("application/json");
+        result.Headers.Should().ContainSingle(header => header.Name == "Content-Type")
+            .Which.Parameters.Should().ContainKey("charset").And.ContainValue("utf-8");
+        result.Headers.Should().ContainSingle(header => header.Name == "Content-Type")
+            .Which.Parameters.Should().ContainKey("boundary").And.ContainValue("something");
+        result.Headers.Should().ContainSingle(header => header.Name == "Host")
+            .Which.Value.Should().Be("example.com");
+        result.Body.Should().Be("{\"test\": \"data\"}");
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_ThrowException_When_Continuation_Line_Without_Header()
+    {
+        // Arrange: Continuation line without a preceding header
+        string rawRequest = """
+            GET /api/test HTTP/1.1
+             Invalid continuation line
+            Host: example.com
+            """;
+
+        // Act
+        Func<Task> act = async () =>
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawRequest));
+            await HttpFileParser.ParseAsync(stream);
+        };
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("Invalid HTTP header format: continuation line without header.");
     }
 }
 
