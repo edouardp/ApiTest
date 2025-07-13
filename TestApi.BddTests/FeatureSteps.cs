@@ -9,10 +9,10 @@ using TestSupport.Json;
 namespace TestApi.BddTests;
 
 [Binding]
-public class AddNumbersStepDefinitions(WebApplicationFactory<SelfHosting> factory)
+public class ApiStepDefinitions(WebApplicationFactory<SelfHosting> factory)
     : IClassFixture<WebApplicationFactory<SelfHosting>>
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private readonly HttpClient client = factory.CreateClient();
     
     private HttpResponseMessage? lastResponse;
     private string? lastBody;
@@ -38,7 +38,7 @@ public class AddNumbersStepDefinitions(WebApplicationFactory<SelfHosting> factor
             Content = new StringContent(request.Body, Encoding.UTF8, "application/json")
         };
 
-        lastResponse = await _client.SendAsync(requestMessage);
+        lastResponse = await client.SendAsync(requestMessage);
 
         lastBody = await lastResponse.Content.ReadAsStringAsync();
     }

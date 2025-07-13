@@ -36,12 +36,6 @@
             var parts = headerContent.Split(';');
             var headerValue = parts[0].Trim();
 
-            // Ensure the header value is not empty.
-            if (string.IsNullOrEmpty(headerValue))
-            {
-                throw new ArgumentException("Invalid header format, value is empty");
-            }
-
             // Dictionary to store parameter key-value pairs, ignoring case.
             var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             for (var i = 1; i < parts.Length; i++)

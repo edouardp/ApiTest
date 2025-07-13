@@ -7,17 +7,13 @@ public record ParsedHttpRequest(HttpMethod Method, string Url, List<ParsedHeader
 
 /// <summary>
 /// Provides functionality to parse an HTTP request from a stream.
-/// This parser extracts the method, URL, headers, and body from a formatted HTTP request.
-/// 
-/// Usage:
-/// <code>
-/// using var stream = File.OpenRead("request.http");
-/// var parser = new HttpFileParser();
-/// var parsedRequest = await parser.ParseAsync(stream);
-/// </code>
 /// </summary>
 public class HttpFileParser
 {
+    private const int MinRequestLineParts = 3;
+    private const char Space = ' ';
+    private const char Tab = '\t';
+
     /// <summary>
     /// Asynchronously parses an HTTP request from a given stream.
     /// </summary>
@@ -26,101 +22,90 @@ public class HttpFileParser
     /// <exception cref="InvalidDataException">Thrown when the request format is invalid.</exception>
     public static async Task<ParsedHttpRequest> ParseAsync(Stream httpStream)
     {
-        // Ensure the stream is not null
-        if (httpStream == null)
-        {
-            throw new ArgumentNullException(nameof(httpStream), "HTTP stream cannot be null.");
-        }
-
-        // Using a StreamReader to read the HTTP request from the provided stream
+        ValidateInputStream(httpStream);
+        
         using var reader = new StreamReader(httpStream);
 
-        // Step 1: Parse the request line (method, URL, and version)
-        // The first line of the HTTP request typically contains the method, URL, and version
-        string? requestLine = await reader.ReadLineAsync();
+        var (method, url) = await ParseRequestLineAsync(reader);
+        var headers = await ParseHeadersAsync(reader);
+        var body = await reader.ReadToEndAsync();
+
+        return new ParsedHttpRequest(method, url, headers, body);
+    }
+
+    private static void ValidateInputStream(Stream httpStream)
+    {
+        if (httpStream == null)
+            throw new ArgumentNullException(nameof(httpStream), "HTTP stream cannot be null.");
+        
+        if (!httpStream.CanRead)
+            throw new ArgumentException("HTTP stream must be readable.", nameof(httpStream));
+    }
+
+    private static async Task<(HttpMethod Method, string Url)> ParseRequestLineAsync(StreamReader reader)
+    {
+        var requestLine = await reader.ReadLineAsync();
         if (string.IsNullOrWhiteSpace(requestLine))
         {
             throw new InvalidDataException("Invalid HTTP file format: missing request line.");
         }
 
-        // Split the request line into parts (method, URL, and version)
-        var requestLineParts = requestLine.Split(' ', 3);
-        if (requestLineParts.Length <= 2)
+        var parts = requestLine.Split(Space, MinRequestLineParts);
+        if (parts.Length < MinRequestLineParts)
         {
-            throw new InvalidDataException("Invalid HTTP request line format.");
+            throw new InvalidDataException($"Invalid request line format: '{requestLine}'. Expected: METHOD URL VERSION");
         }
 
-        // Step 2: Convert the method string to an HttpMethod object
-        // Convert the HTTP method (GET, POST, etc.) to an HttpMethod object
-        string methodString = requestLineParts[0];
-        HttpMethod method = new HttpMethod(methodString.ToUpperInvariant());
+        var (methodString, url, _) = (parts[0], parts[1], parts[2]);
+        var method = new HttpMethod(methodString.ToUpperInvariant());
+        
+        return (method, url);
+    }
 
-        // Extract the URL from the request line
-        string url = requestLineParts[1]; // The URL/path
-
-        // Step 3: Parse headers
-        // Initialize an empty list to store parsed headers
+    private static async Task<List<ParsedHeader>> ParseHeadersAsync(StreamReader reader)
+    {
         var headers = new List<ParsedHeader>();
-        string? line;
         string? currentHeaderLine = null;
         
-        while ((line = await reader.ReadLineAsync()) != null)
+        while (await reader.ReadLineAsync() is { } line)
         {
-            // Check if this is an empty line (end of headers)
             if (string.IsNullOrWhiteSpace(line))
             {
-                // Process any pending header before breaking
-                if (!string.IsNullOrWhiteSpace(currentHeaderLine))
-                {
-                    var parsedHeader = HttpHeadersParser.ParseHeader(currentHeaderLine);
-                    headers.Add(parsedHeader);
-                    currentHeaderLine = null; // Clear to avoid double processing
-                }
-                break;
+                ProcessPendingHeader(headers, currentHeaderLine);
+                return headers;
             }
             
-            // Check if this is a continuation line (starts with whitespace)
-            if (line.StartsWith(' ') || line.StartsWith('\t'))
+            if (IsHeaderContinuation(line))
             {
-                // This is a multiline header continuation
-                if (currentHeaderLine != null)
+                if (currentHeaderLine == null)
                 {
-                    // Append to the current header, replacing the line break with a space
-                    currentHeaderLine += " " + line.Trim();
+                    throw new InvalidDataException($"Invalid HTTP header format: continuation line '{line.Trim()}' without preceding header.");
                 }
-                else
-                {
-                    // Invalid format: continuation line without a header
-                    throw new InvalidDataException("Invalid HTTP header format: continuation line without header.");
-                }
+                currentHeaderLine += Space + line.Trim();
             }
             else
             {
-                // This is a new header line
-                // First, process any pending header
-                if (!string.IsNullOrWhiteSpace(currentHeaderLine))
-                {
-                    var parsedHeader = HttpHeadersParser.ParseHeader(currentHeaderLine);
-                    headers.Add(parsedHeader);
-                }
-                
-                // Start a new header
+                ProcessPendingHeader(headers, currentHeaderLine);
                 currentHeaderLine = line;
             }
         }
+        
+        // Only process the final header if we reached end of stream without empty line
+        ProcessPendingHeader(headers, currentHeaderLine);
+        return headers;
+    }
 
-        // Process any remaining header after the loop ends (when stream ends without empty line)
-        if (!string.IsNullOrWhiteSpace(currentHeaderLine))
+    private static bool IsHeaderContinuation(string line)
+    {
+        return line.StartsWith(Space) || line.StartsWith(Tab);
+    }
+
+    private static void ProcessPendingHeader(List<ParsedHeader> headers, string? headerLine)
+    {
+        if (!string.IsNullOrWhiteSpace(headerLine))
         {
-            var parsedHeader = HttpHeadersParser.ParseHeader(currentHeaderLine);
+            var parsedHeader = HttpHeadersParser.ParseHeader(headerLine);
             headers.Add(parsedHeader);
         }
-
-        // Step 4: Read the body (if any)
-        // Read the remaining content in the stream as the body of the HTTP request
-        string body = await reader.ReadToEndAsync();
-
-        // Return the parsed HTTP request as a record
-        return new ParsedHttpRequest(method, url, headers, body);
     }
 }
