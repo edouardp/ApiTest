@@ -47,3 +47,46 @@ The TestSupport project provides reusable testing utilities:
 - **Dependency Injection**: Uses built-in DI container
 - **Controllers**: JobController (job management), MathController (calculations)
 - **Error Handling**: Returns RFC 9110 compliant problem details for errors
+
+## JsonComparer Function Extension
+
+### Function System
+The JsonComparer now supports function execution during JSON preprocessing:
+
+#### Token Types
+- **Extraction tokens**: `[[TOKEN_NAME]]` - Extract values from actual JSON
+- **Function tokens**: `{{FUNCTION_NAME()}}` - Execute functions and replace with results
+- **Variable tokens**: `{{VARIABLE_NAME}}` - Substitute values from context
+
+#### Built-in Functions
+- **`{{GUID()}}`**: Generates a new GUID
+- **`{{NOW()}}`**: Returns current local date/time in ISO 8601 format
+- **`{{UTCNOW()}}`**: Returns current UTC date/time in ISO 8601 format with 'Z' suffix
+
+#### Testing with TimeProvider
+For deterministic testing, use the TimeProvider overloads:
+```csharp
+var fixedTime = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero);
+var fakeTimeProvider = new FakeTimeProvider(fixedTime);
+
+bool result = JsonComparer.ExactMatch(expectedJson, actualJson, fakeTimeProvider, 
+    out var extractedValues, out var mismatches);
+```
+
+#### Custom Functions
+Register custom functions for specialized testing needs:
+```csharp
+JsonComparer.RegisterFunction("CUSTOM_ID", new CustomIdFunction());
+```
+
+#### Example Usage
+```csharp
+string expectedJson = """
+{
+    "id": "[[JOB_ID]]",
+    "createdAt": "{{UTCNOW()}}",
+    "sessionId": "{{GUID()}}",
+    "status": "pending"
+}
+""";
+```
